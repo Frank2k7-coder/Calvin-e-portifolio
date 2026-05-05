@@ -5,7 +5,7 @@ export default function Navigation() {
         <div className="text-2xl font-serif font-bold text-foreground transition-transform duration-500 hover:-translate-y-0.5">
          Calvin Nehemie
         </div>
-        <div className="hidden md:flex gap-8">
+      <div className="hidden md:flex gap-8">
           <a href="#portfolio" className="text-sm text-foreground hover:text-accent transition">
             Gallery
           </a>
