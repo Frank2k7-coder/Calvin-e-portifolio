@@ -27,7 +27,7 @@ export default function Navigation() {
            <a href="https://docs.google.com/document/d/e/2PACX-1vShTdYlp7HTkt6Z-szlYM8udhlb61s-QiU-_uMq8b4f6UzPWuz-2OQzpHncFvKYNi4xqRhY0WQRY7bi/pub" className="text-sm text-foreground hover:text-accent transition">
             Resume
           </a>
-           <a href="https://docs.google.com/document/d/e/2PACX-1vShTdYlp7HTkt6Z-szlYM8udhlb61s-QiU-_uMq8b4f6UzPWuz-2OQzpHncFvKYNi4xqRhY0WQRY7bi/pub" className="text-sm text-foreground hover:text-accent transition">
+           <a href="https://docs.google.com/document/d/e/2PACX-1vTbm65Df-OiqmLUFR9MzvF87HO8-c0XljJytHh4ksdwhP3CHoS_3mVzTnfNeNwGNAHX9Kdc6jNehiZ3/pub?urp=gmail_link" className="text-sm text-foreground hover:text-accent transition">
             Recomendation
           </a>
           <a href="https://docs.google.com/document/d/e/2PACX-1vQbruMZOR_qmgnFCUyxbXSZu2r8pYbD6auWQvLCPWPUG8r8DGmKpm0VBwfRiouMYW4QGZjshwu57cX1/pub?urp=gmail_link" className="text-sm text-foreground hover:text-accent transition">
