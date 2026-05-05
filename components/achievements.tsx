@@ -48,7 +48,7 @@ const documents = [
   {
     title: 'Cover Letter',
     description: 'Professional introduction and career narrative',
-    url: 'https://docs.google.com/document/d/e/2PACX-1vQbruMZOR_qmgnFCUyxbXSZu2r8pYbD6auWQvLCPWPUG8r8DGmKpm0VBwfRiouMYW4QGZjshwu57cX1/pub',
+    url: 'https://docs.google.com/document/d/e/2PACX-1vQbruMZOR_qmgnFCUyxbXSZu2r8pYbD6auWQvLCPWPUG8r8DGmKpm0VBwfRiouMYW4QGZjshwu57cX1/pub?urp=gmail_link',
     icon: FileText,
     color: 'blue',
   },
