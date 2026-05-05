@@ -2,20 +2,8 @@
 
 import { Play, Calendar, Clock, ArrowUpRight, Sparkles, Plus, Edit2, Trash2, X, Video as VideoIcon, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-// Import the function you just created
+import { createBrowserClient } from '@supabase/ssr'
 import { uploadToCloudinary } from '@/lib/cloudinary'
-
-type VideoProject = {
-  id: string
-  title: string
-  description: string
-  category: string
-  duration: string
-  date: string
-  videoUrl: string
-  thumbnail: string
-  color: string
-}
 
 const CATEGORIES = ['Weddings', 'Corporate', 'Travel', 'Events', 'Social Media', 'Documentary', 'Commercial']
 const COLOR_PRESETS = [
@@ -26,13 +14,31 @@ const COLOR_PRESETS = [
   'from-green-500 to-emerald-600',
 ]
 
-const STORAGE_KEY = 'photographer_video_projects'
+interface VideoProject {
+  id: string
+  title: string
+  description: string
+  category: string
+  duration: string
+  date: string
+  video_url: string
+  thumbnail: string
+  color: string
+  created_at?: string
+}
+
+// Create Supabase client
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export default function VideoProjects() {
   const [videos, setVideos] = useState<VideoProject[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [editingVideo, setEditingVideo] = useState<VideoProject | null>(null)
   const [selectedVideo, setSelectedVideo] = useState<VideoProject | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -40,13 +46,22 @@ export default function VideoProjects() {
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false)
 
   useEffect(() => {
-    const savedVideos = localStorage.getItem(STORAGE_KEY)
-    if (savedVideos) setVideos(JSON.parse(savedVideos))
+    const loadVideos = async () => {
+      setIsLoading(true)
+      const { data, error } = await supabase
+        .from('video_projects')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error fetching videos:', error)
+      } else {
+        setVideos(data || [])
+      }
+      setIsLoading(false)
+    }
+    loadVideos()
   }, [])
-
-  useEffect(() => {
-    if (videos.length > 0) localStorage.setItem(STORAGE_KEY, JSON.stringify(videos))
-  }, [videos])
 
   const formatVideoUrl = (url: string): string => {
     const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/
@@ -63,20 +78,91 @@ export default function VideoProjects() {
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault()
     if (adminPassword === 'photographer2024') {
-      setIsAdmin(true); setShowPasswordPrompt(false); setAdminPassword('')
+      setIsAdmin(true)
+      setShowPasswordPrompt(false)
+      setAdminPassword('')
     } else {
       alert('Incorrect password')
     }
   }
 
-  const saveVideo = () => {
-    if (editingVideo) {
-      const exists = videos.find(v => v.id === editingVideo.id)
-      setVideos(exists 
-        ? videos.map(v => v.id === editingVideo.id ? editingVideo : v) 
-        : [editingVideo, ...videos]
-      )
-      setIsEditing(false)
+  const saveVideo = async () => {
+    if (!editingVideo) return
+
+    setIsUploading(true)
+
+    try {
+      if (editingVideo.id && videos.some(v => v.id === editingVideo.id)) {
+        // Update existing video
+        const { error } = await supabase
+          .from('video_projects')
+          .update({
+            title: editingVideo.title,
+            description: editingVideo.description,
+            category: editingVideo.category,
+            duration: editingVideo.duration,
+            date: editingVideo.date,
+            video_url: editingVideo.video_url,
+            thumbnail: editingVideo.thumbnail,
+            color: editingVideo.color,
+          })
+          .eq('id', editingVideo.id)
+
+        if (error) {
+          console.error('Update error:', error)
+          alert('Failed to update video project')
+        } else {
+          setVideos(videos.map(v => v.id === editingVideo.id ? editingVideo : v))
+          setIsEditing(false)
+        }
+      } else {
+        // Add new video
+        const newVideo = {
+          title: editingVideo.title,
+          description: editingVideo.description,
+          category: editingVideo.category,
+          duration: editingVideo.duration,
+          date: editingVideo.date,
+          video_url: editingVideo.video_url,
+          thumbnail: editingVideo.thumbnail,
+          color: editingVideo.color,
+        }
+
+        const { data, error } = await supabase
+          .from('video_projects')
+          .insert([newVideo])
+          .select()
+          .single()
+
+        if (error) {
+          console.error('Insert error:', error)
+          alert('Failed to save video project')
+        } else {
+          setVideos([data, ...videos])
+          setIsEditing(false)
+        }
+      }
+    } catch (error) {
+      console.error('Save error:', error)
+      alert('An error occurred while saving')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const deleteVideo = async (id: string) => {
+    if (!confirm('Permanently delete this video project?')) return
+
+    const { error } = await supabase
+      .from('video_projects')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Delete error:', error)
+      alert('Failed to delete video project')
+    } else {
+      setVideos(videos.filter(v => v.id !== id))
     }
   }
 
@@ -93,9 +179,9 @@ export default function VideoProjects() {
       
       if (url) {
         if (type === 'video') {
-          // Cloudinary hack: change extension to .jpg to get a frame from the video
+          // Cloudinary: change extension to .jpg to get a frame from the video
           const thumbUrl = url.replace(/\.[^/.]+$/, ".jpg")
-          setEditingVideo({ ...editingVideo, videoUrl: url, thumbnail: thumbUrl })
+          setEditingVideo({ ...editingVideo, video_url: url, thumbnail: thumbUrl })
         } else {
           setEditingVideo({ ...editingVideo, thumbnail: url })
         }
@@ -117,8 +203,8 @@ export default function VideoProjects() {
               <input 
                 className="w-full p-2 bg-secondary rounded-lg border border-border outline-none focus:border-accent"
                 placeholder="Cloudinary URL or YouTube/Vimeo link"
-                value={editingVideo.videoUrl}
-                onChange={e => setEditingVideo({...editingVideo, videoUrl: e.target.value})}
+                value={editingVideo.video_url}
+                onChange={e => setEditingVideo({...editingVideo, video_url: e.target.value})}
               />
               <div className="relative border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-accent/5 transition-colors cursor-pointer">
                 <input 
@@ -140,7 +226,8 @@ export default function VideoProjects() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input 
                 className="w-full p-2 bg-secondary rounded-lg border border-border" 
-                placeholder="Title" value={editingVideo.title}
+                placeholder="Title" 
+                value={editingVideo.title}
                 onChange={e => setEditingVideo({...editingVideo, title: e.target.value})}
               />
               <select 
@@ -151,6 +238,29 @@ export default function VideoProjects() {
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <input 
+                className="w-full p-2 bg-secondary rounded-lg border border-border" 
+                placeholder="Duration (e.g., 3:30)" 
+                value={editingVideo.duration}
+                onChange={e => setEditingVideo({...editingVideo, duration: e.target.value})}
+              />
+              <input 
+                className="w-full p-2 bg-secondary rounded-lg border border-border" 
+                placeholder="Date (e.g., 2024)" 
+                value={editingVideo.date}
+                onChange={e => setEditingVideo({...editingVideo, date: e.target.value})}
+              />
+            </div>
+
+            <textarea 
+              className="w-full p-2 bg-secondary rounded-lg border border-border" 
+              placeholder="Description"
+              rows={3}
+              value={editingVideo.description}
+              onChange={e => setEditingVideo({...editingVideo, description: e.target.value})}
+            />
 
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-1">
@@ -189,6 +299,16 @@ export default function VideoProjects() {
     )
   }
 
+  if (isLoading) {
+    return (
+      <section id="videos" className="w-full py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-6 flex justify-center items-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        </div>
+      </section>
+    )
+  }
+
   return (
     <>
       <section id="videos" className="w-full py-24 bg-background">
@@ -202,7 +322,25 @@ export default function VideoProjects() {
               <button onClick={() => setShowPasswordPrompt(true)} className="text-[10px] text-muted-foreground/50 hover:text-accent uppercase tracking-widest font-bold">Access Admin</button>
             ) : (
               <div className="flex gap-3">
-                <button onClick={() => { setEditingVideo({ id: Date.now().toString(), title: '', description: '', category: CATEGORIES[0], duration: '3:00', date: '2024', videoUrl: '', thumbnail: '', color: COLOR_PRESETS[0] }); setIsEditing(true); }} className="bg-accent text-white px-5 py-2 rounded-full font-bold flex items-center gap-2 shadow-lg shadow-accent/20"><Plus className="w-4 h-4" /> New Project</button>
+                <button 
+                  onClick={() => { 
+                    setEditingVideo({ 
+                      id: '', 
+                      title: '', 
+                      description: '', 
+                      category: CATEGORIES[0], 
+                      duration: '3:00', 
+                      date: new Date().getFullYear().toString(), 
+                      video_url: '', 
+                      thumbnail: '', 
+                      color: COLOR_PRESETS[0] 
+                    }); 
+                    setIsEditing(true); 
+                  }} 
+                  className="bg-accent text-white px-5 py-2 rounded-full font-bold flex items-center gap-2 shadow-lg shadow-accent/20"
+                >
+                  <Plus className="w-4 h-4" /> New Project
+                </button>
                 <button onClick={() => setIsAdmin(false)} className="px-5 py-2 border border-border rounded-full text-sm font-bold">Exit</button>
               </div>
             )}
@@ -213,13 +351,30 @@ export default function VideoProjects() {
               <div key={video.id} className="group relative bg-card border border-border rounded-2xl overflow-hidden hover:border-accent/40 transition-all duration-500">
                 {isAdmin && (
                   <div className="absolute top-4 right-4 z-20 flex gap-2">
-                    <button onClick={() => { setEditingVideo(video); setIsEditing(true); }} className="p-2 bg-black/60 rounded-full text-white backdrop-blur-md hover:bg-accent"><Edit2 className="w-3 h-3" /></button>
-                    <button onClick={() => setVideos(videos.filter(v => v.id !== video.id))} className="p-2 bg-red-500/80 rounded-full text-white backdrop-blur-md"><Trash2 className="w-3 h-3" /></button>
+                    <button 
+                      onClick={() => { setEditingVideo(video); setIsEditing(true); }} 
+                      className="p-2 bg-black/60 rounded-full text-white backdrop-blur-md hover:bg-accent"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                    </button>
+                    <button 
+                      onClick={() => deleteVideo(video.id)} 
+                      className="p-2 bg-red-500/80 rounded-full text-white backdrop-blur-md hover:bg-red-600"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
                   </div>
                 )}
                 
-                <div className="relative h-64 cursor-pointer overflow-hidden" onClick={() => { setSelectedVideo(video); setIsModalOpen(true); }}>
-                  <img src={video.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={video.title} />
+                <div 
+                  className="relative h-64 cursor-pointer overflow-hidden" 
+                  onClick={() => { setSelectedVideo(video); setIsModalOpen(true); }}
+                >
+                  <img 
+                    src={video.thumbnail} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                    alt={video.title} 
+                  />
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className={`p-5 rounded-full bg-gradient-to-br ${video.color} shadow-2xl transform scale-75 group-hover:scale-100 transition-transform`}>
                       <Play className="w-8 h-8 text-white fill-current" />
@@ -233,14 +388,26 @@ export default function VideoProjects() {
                     <span className="text-xs text-muted-foreground font-mono">{video.date}</span>
                   </div>
                   <h3 className="text-2xl font-serif font-bold mb-2 group-hover:text-accent transition-colors">{video.title}</h3>
+                  {video.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{video.description}</p>
+                  )}
                   <div className="flex items-center justify-between mt-6 text-xs font-bold border-t border-border pt-4">
                     <span className="flex items-center gap-1.5 opacity-60"><Clock className="w-3 h-3" /> {video.duration}</span>
-                    <button className="flex items-center gap-1 hover:gap-2 transition-all text-accent">Play Reel <ArrowUpRight className="w-3 h-3" /></button>
+                    <button className="flex items-center gap-1 hover:gap-2 transition-all text-accent">
+                      Play Reel <ArrowUpRight className="w-3 h-3" />
+                    </button>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+
+          {videos.length === 0 && (
+            <div className="text-center py-20">
+              <VideoIcon className="w-16 h-16 mx-auto mb-4 opacity-20" />
+              <p className="text-muted-foreground">No video projects yet. {isAdmin && 'Click "New Project" to add one!'}</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -248,8 +415,19 @@ export default function VideoProjects() {
       {isModalOpen && selectedVideo && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4" onClick={() => setIsModalOpen(false)}>
           <div className="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-colors"><X className="w-6 h-6" /></button>
-            <iframe src={formatVideoUrl(selectedVideo.videoUrl)} className="w-full h-full" allowFullScreen allow="autoplay" />
+            <button 
+              onClick={() => setIsModalOpen(false)} 
+              className="absolute top-6 right-6 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <iframe 
+              src={formatVideoUrl(selectedVideo.video_url)} 
+              className="w-full h-full" 
+              allowFullScreen 
+              allow="autoplay; fullscreen" 
+              title={selectedVideo.title}
+            />
           </div>
         </div>
       )}
@@ -260,13 +438,23 @@ export default function VideoProjects() {
           <form onSubmit={handleAdminLogin} className="bg-card p-8 rounded-3xl border border-border w-full max-w-sm text-center shadow-2xl">
             <h3 className="text-2xl font-serif font-bold mb-6">Director Login</h3>
             <input 
-              type="password" autoFocus
+              type="password" 
+              autoFocus
               className="w-full p-4 bg-secondary rounded-2xl border border-border mb-4 text-center outline-none focus:border-accent" 
               placeholder="••••••••" 
-              value={adminPassword} onChange={e => setAdminPassword(e.target.value)}
+              value={adminPassword} 
+              onChange={e => setAdminPassword(e.target.value)}
             />
-            <button type="submit" className="w-full bg-accent text-white py-4 rounded-2xl font-bold shadow-lg shadow-accent/20">Authorize</button>
-            <button type="button" onClick={() => setShowPasswordPrompt(false)} className="mt-4 text-xs font-bold opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest">Cancel</button>
+            <button type="submit" className="w-full bg-accent text-white py-4 rounded-2xl font-bold shadow-lg shadow-accent/20">
+              Authorize
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setShowPasswordPrompt(false)} 
+              className="mt-4 text-xs font-bold opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest"
+            >
+              Cancel
+            </button>
           </form>
         </div>
       )}

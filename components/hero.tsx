@@ -9,7 +9,7 @@ export default function Hero() {
         <div className="absolute top-[20%] -left-[10%] w-[30%] h-[30%] bg-primary/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="max-w-7xl mx-auto w-full relative z-10">
+      <div className="max-w-7xl mx-auto w-full relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           
           {/* Left Column: Bio & Call to Actions */}

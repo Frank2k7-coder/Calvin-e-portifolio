@@ -1,8 +1,8 @@
 export default function Navigation() {
   return (
-    <nav className="fixed top-0 w-full bg-background/95 backdrop-blur z-50 border-b border-border">
+    <nav className="fixed top-0 w-full bg-background/95 backdrop-blur z-50 border-b border-border animate-in fade-in slide-in-from-top-2 duration-700">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <div className="text-2xl font-serif font-bold text-foreground">
+        <div className="text-2xl font-serif font-bold text-foreground transition-transform duration-500 hover:-translate-y-0.5">
          Calvin Nehemie
         </div>
         <div className="hidden md:flex gap-8">

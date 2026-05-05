@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { getImages, addImage, deleteImage } from '@/lib/image-storage'
-import type { PortfolioImage } from '@/lib/image-storage'
+import { getPortfolioImages, addPortfolioImage, deletePortfolioImage, type PortfolioImage } from '@/lib/database'
+import { uploadToCloudinary } from '@/lib/cloudinary'
+import { Loader2, Trash2 } from 'lucide-react'
 
 const categories = ['Portraits', 'Landscapes', 'Events', 'Lifestyle']
+const aspectRatios = ['aspect-video', 'aspect-[3/4]', 'aspect-square', 'aspect-[4/5]', 'aspect-[2/3]']
 
 export default function AdminPage() {
   const [images, setImages] = useState<PortfolioImage[]>([])
@@ -14,9 +16,16 @@ export default function AdminPage() {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
 
   useEffect(() => {
-    setImages(getImages())
+    const loadImages = async () => {
+      setIsInitialLoading(true)
+      const fetchedImages = await getPortfolioImages()
+      setImages(fetchedImages)
+      setIsInitialLoading(false)
+    }
+    loadImages()
   }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,27 +42,45 @@ export default function AdminPage() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!file || !title || !preview) {
+    if (!file || !title) {
       alert('Please fill in all fields and select an image')
       return
     }
 
     setLoading(true)
     try {
+      // Upload to Cloudinary
+      const cloudinaryUrl = await uploadToCloudinary(file)
+      
+      if (!cloudinaryUrl) {
+        alert('Failed to upload image to Cloudinary')
+        setLoading(false)
+        return
+      }
+
+      // Create image object with Cloudinary URL
       const newImage: PortfolioImage = {
         id: Date.now().toString(),
         title,
         category,
-        image: preview,
+        image: cloudinaryUrl, // Use Cloudinary URL instead of base64
         createdAt: Date.now(),
+        aspect: aspectRatios[Math.floor(Math.random() * aspectRatios.length)]
       }
-      addImage(newImage)
-      setImages(getImages())
-      setTitle('')
-      setCategory('Portraits')
-      setFile(null)
-      setPreview('')
-      alert('Image uploaded successfully!')
+
+      // Save to Supabase
+      const success = await addPortfolioImage(newImage)
+      
+      if (success) {
+        setImages([newImage, ...images])
+        setTitle('')
+        setCategory('Portraits')
+        setFile(null)
+        setPreview('')
+        alert('Image uploaded successfully to Cloudinary and saved to database!')
+      } else {
+        alert('Failed to save image to database')
+      }
     } catch (error) {
       alert('Error uploading image')
       console.error(error)
@@ -62,11 +89,26 @@ export default function AdminPage() {
     }
   }
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this image?')) {
-      deleteImage(id)
-      setImages(getImages())
+      const success = await deletePortfolioImage(id)
+      if (success) {
+        setImages(images.filter(img => img.id !== id))
+      } else {
+        alert('Failed to delete image')
+      }
     }
+  }
+
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground py-20 px-6 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
+          <p className="text-muted-foreground">Loading portfolio...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -76,7 +118,7 @@ export default function AdminPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-serif font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage your portfolio images</p>
+            <p className="text-muted-foreground">Manage your portfolio images with Cloudinary & Supabase</p>
           </div>
           <Link
             href="/"
@@ -116,7 +158,7 @@ export default function AdminPage() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    PNG, JPG, WebP (Max 5MB)
+                    PNG, JPG, WebP (Max 5MB) - Uploads to Cloudinary
                   </p>
                 </div>
 
@@ -157,9 +199,16 @@ export default function AdminPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-accent text-accent-foreground py-2 rounded font-semibold hover:opacity-90 transition disabled:opacity-50"
+                  className="w-full bg-accent text-accent-foreground py-2 rounded font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {loading ? 'Uploading...' : 'Upload Image'}
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    'Upload Image'
+                  )}
                 </button>
               </form>
             </div>
@@ -200,11 +249,15 @@ export default function AdminPage() {
                       />
                       <div className="p-4">
                         <h3 className="font-semibold text-foreground mb-1">{img.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-3">{img.category}</p>
+                        <p className="text-sm text-muted-foreground mb-1">{img.category}</p>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          Stored: Cloudinary & Supabase
+                        </p>
                         <button
                           onClick={() => handleDelete(img.id)}
-                          className="w-full px-3 py-2 bg-destructive text-destructive-foreground rounded text-sm font-semibold hover:opacity-90 transition"
+                          className="w-full px-3 py-2 bg-destructive text-destructive-foreground rounded text-sm font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
                         >
+                          <Trash2 className="w-4 h-4" />
                           Delete
                         </button>
                       </div>
