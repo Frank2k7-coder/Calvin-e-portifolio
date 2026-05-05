@@ -18,7 +18,7 @@ export default function Contact() {
       ...prev,
       [name]: value
     }))
-  }
+  } 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,9 +32,9 @@ export default function Contact() {
   }
 
   const contactInfo = [
-    { icon: Mail, label: 'Email', value: 'nehemie@example.com', href: 'mailto:nehemie@example.com' },
-    { icon: Phone, label: 'Phone', value: '+1 (234) 567-890', href: 'tel:+1234567890' },
-    { icon: MapPin, label: 'Location', value: 'Available Worldwide', href: null },
+    { icon: Mail, label: 'Email', value: 'calvinnehem@gmail.com', href: 'mailto:calvinnehem@gmail.com' },
+    { icon: Phone, label: 'Phone', value: '+250 788 368 297', href: 'tel:+250788368297' },
+    { icon: MapPin, label: 'Location', value: 'Agahozo Shallom Youth Village, Rwamagana', href: null },
   ]
 
   const socials = [
