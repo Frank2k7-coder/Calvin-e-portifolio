@@ -315,7 +315,7 @@ export default function VideoProjects() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div className="max-w-2xl">
-              <h2 className="text-5xl font-serif font-bold mb-4">Cinematography</h2>
+              <h2 className="text-5xl font-serif font-bold mb-4">Videography</h2>
               <p className="text-muted-foreground italic">Visual stories captured through motion and light.</p>
             </div>
             {!isAdmin ? (

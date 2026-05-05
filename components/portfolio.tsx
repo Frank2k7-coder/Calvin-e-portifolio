@@ -150,7 +150,7 @@ export default function Portfolio() {
           <div className="space-y-4">
             <h2 className="text-sm uppercase tracking-[0.4em] text-accent font-bold">Portfolio</h2>
             <h3 className="text-5xl md:text-7xl font-serif font-bold text-foreground tracking-tight">
-              Selected <span className="italic font-light">Works</span>
+              Photography <span className="italic font-light">Projects</span>
             </h3>
           </div>
           

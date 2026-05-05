@@ -19,18 +19,15 @@ export default function Hero() {
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-full transition-all hover:bg-accent/20">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
                 </span>
-                <span className="text-xs font-bold tracking-widest uppercase text-accent">Open for Commissions</span>
+              
               </div>
               
+
               {/* Main Title */}
               <div className="space-y-2">
-                <h1 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-foreground tracking-tight leading-none">
-                  Nehemie <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/60">
-                    Calvin
-                  </span>
+                <h1 className="text-6xl md:text-7xl lg:text-8xl font-serif text-foreground tracking-tight leading-none">
+                  NEHEMIE <br />
                 </h1>
                 <p className="text-xl md:text-2xl text-muted-foreground font-light tracking-wide flex items-center gap-3">
                   <span className="h-px w-8 bg-accent/50"></span>
@@ -86,7 +83,8 @@ export default function Hero() {
             
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-2xl">
               <img 
-                src="https://media.greatbigphotographyworld.com/wp-content/uploads/2023/07/creative-crystal-ball-photography.jpg" 
+            
+                src="https://res.cloudinary.com/dmmldzjty/image/upload/v1778003500/Kwibuka32_12_di02kp.jpg" 
                 alt="Nehemie Calvin Photography" 
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
               />

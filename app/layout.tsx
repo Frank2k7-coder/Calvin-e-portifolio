@@ -15,7 +15,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Professional Photography Portfolio',
   description: 'Explore stunning visual storytelling and professional photography',
-  generator: 'v0.app',
+  generator: 'Next.js',
 }
 
 export default function RootLayout({

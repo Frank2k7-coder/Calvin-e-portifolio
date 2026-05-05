@@ -1,6 +1,6 @@
 'use client'
 
-import { Award, Star, ExternalLink, Download, ChevronRight, Sparkles, Camera, Heart, Users, Globe, Video, Mail, Phone, ShieldCheck } from 'lucide-react'
+import { Award, Star, ExternalLink, Download, ChevronRight, Sparkles, Camera, Heart, Users, Globe, Video, Mail, Phone, ShieldCheck, FileText, Briefcase } from 'lucide-react'
 import Link from 'next/link'
 
 const achievements = [
@@ -33,6 +33,24 @@ const achievements = [
     icon: Star,
     color: 'purple',
     featured: true,
+  },
+]
+
+// Document items for easy management
+const documents = [
+  {
+    title: 'Resume / CV',
+    description: 'Complete technical CV and project breakdown',
+    url: 'https://docs.google.com/document/d/19zHvWOu5mObNMjTNfCHHWvi8IC33i6ajdQ_Y6AxUP38/edit?usp=sharing',
+    icon: Download,
+    color: 'accent',
+  },
+  {
+    title: 'Cover Letter',
+    description: 'Professional introduction and career narrative',
+    url: 'https://docs.google.com/document/d/e/2PACX-1vQbruMZOR_qmgnFCUyxbXSZu2r8pYbD6auWQvLCPWPUG8r8DGmKpm0VBwfRiouMYW4QGZjshwu57cX1/pub',
+    icon: FileText,
+    color: 'blue',
   },
 ]
 
@@ -106,10 +124,10 @@ export default function Achievements() {
           ))}
         </div>
 
-        {/* Skills & Capability Matrix */}
+        {/* Skills & Documents Section - Rearranged */}
         <div className="grid lg:grid-cols-12 gap-8 items-stretch">
-          {/* Skills Area */}
-          <div className="lg:col-span-8 p-10 rounded-3xl bg-secondary/30 border border-border">
+          {/* Skills Area - Expanded */}
+          <div className="lg:col-span-7 p-10 rounded-3xl bg-secondary/30 border border-border">
             <div className="flex items-center gap-4 mb-8">
                <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
                   <Video className="w-5 h-5 text-accent" />
@@ -130,23 +148,60 @@ export default function Achievements() {
             </div>
           </div>
 
-          {/* Contact / Resume Quick-Action */}
-          <div className="lg:col-span-4 p-10 rounded-3xl bg-foreground text-background flex flex-col justify-between">
-            <div>
-              <h4 className="text-2xl font-serif font-bold mb-4">Want to see the full journey?</h4>
-              <p className="text-background/70 text-sm font-light">Download my complete technical CV and project breakdown.</p>
+          {/* Documents Hub - Dedicated prominent location */}
+          <div className="lg:col-span-5 rounded-3xl bg-gradient-to-br from-foreground to-foreground/95 text-background overflow-hidden">
+            <div className="p-8 border-b border-background/10">
+              <div className="flex items-center gap-3 mb-2">
+                <Briefcase className="w-5 h-5 text-accent" />
+                <h4 className="text-xl font-serif font-bold">Professional Portfolio</h4>
+              </div>
+              <p className="text-background/60 text-sm font-light">
+                Download my complete credentials and professional documentation.
+              </p>
             </div>
             
-            <div className="space-y-4 mt-8">
-              <Link href="https://docs.google.com/document/d/19zHvWOu5mObNMjTNfCHHWvi8IC33i6ajdQ_Y6AxUP38/edit?usp=sharing" className="flex items-center justify-center gap-3 w-full py-4 bg-accent text-accent-foreground rounded-2xl font-bold hover:scale-[1.02] transition-transform">
-                <Download className="w-4 h-4" /> Download Resume
-              </Link>
-              <div className="flex flex-col gap-3 pt-4 border-t border-background/10 text-xs opacity-60">
-                <div className="flex items-center gap-2">
-                  <Globe className="w-3 h-3" /> Rwanda (Rusizi/ASYV)
-                </div>
-                <div className="flex items-center gap-2 underline decoration-accent/50">
-                  <Mail className="w-3 h-3" /> calvinnehem@gmail.com
+            <div className="p-6 space-y-4">
+              {documents.map((doc, idx) => {
+                const Icon = doc.icon;
+                return (
+                  <Link 
+                    key={idx}
+                    href={doc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center justify-between p-4 rounded-2xl bg-background/5 hover:bg-background/10 transition-all duration-300 border border-background/10 hover:border-accent/50"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-xl bg-${doc.color}/20 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                        <Icon className={`w-4 h-4 text-${doc.color === 'accent' ? 'accent' : 'blue-400'}`} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-background group-hover:text-accent transition-colors">
+                          {doc.title}
+                        </p>
+                        <p className="text-[10px] text-background/50 uppercase tracking-wider">
+                          {doc.description}
+                        </p>
+                      </div>
+                    </div>
+                    <Download className="w-4 h-4 text-background/40 group-hover:text-accent group-hover:translate-y-[-2px] transition-all" />
+                  </Link>
+                );
+              })}
+              
+              {/* Contact Information Footer */}
+              <div className="pt-6 mt-2 border-t border-background/10">
+                <div className="flex flex-col gap-2 text-xs text-background/50">
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-3 h-3" /> 
+                    <span>Rwanda (Rusizi / ASYV)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-3 h-3" /> 
+                    <a href="mailto:calvinnehem@gmail.com" className="hover:text-accent transition-colors">
+                      calvinnehem@gmail.com
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>

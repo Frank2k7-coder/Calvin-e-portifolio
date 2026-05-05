@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, Camera, Clock, Heart, Binary, Microscope, Zap } from 'lucide-react';
+import { Award, Camera, Clock, Heart, Binary, Zap } from 'lucide-react';
 
 const stats = [
   { icon: Camera, label: 'Projects', value: '50+' },
@@ -17,10 +17,10 @@ export default function About() {
   return (
     <section id="about" className="relative py-32 px-6 bg-background overflow-hidden">
       {/* Decorative Grid Pattern (Scientific Feel) */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" >
-       <a href='https://i.pinimg.com/736x/3b/e9/8a/3be98a870c0efe26f9ba9a2e47d4655d.jpg'    style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '40px 40px' }}/> 
-   
-      </div>
+      <div 
+        className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+        style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '40px 40px' }}
+      />
 
       <div className="max-w-7xl mx-auto relative">
         <div className="grid lg:grid-cols-12 gap-16 items-center">
@@ -33,14 +33,12 @@ export default function About() {
             
             <div className="relative z-10 group">
               <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl bg-muted">
-                 {/* Replace with your actual portrait */}
-                <div className="w-full h-full bg-gradient-to-br from-secondary to-accent/10 flex flex-col items-center justify-center p-8 text-center">
-                   <div className="relative">
-                      <Camera className="w-16 h-16 text-accent mb-4 animate-pulse" />
-                      <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full border-2 border-white" />
-                   </div>
-                   <p className="text-foreground font-serif italic text-lg tracking-tight">"Capturing the physics of emotion."</p>
-                </div>
+                {/* Profile Image - Integrated without breaking UI */}
+                <img 
+                  src="https://res.cloudinary.com/dmmldzjty/image/upload/v1778002188/DSC04052_ur2kgz.jpg" 
+                  alt="Nehemie Calvin - Photographer"
+                  className="w-full h-full object-cover object-center"
+                />
               </div>
 
               {/* Floating Technical Badge */}
@@ -69,7 +67,7 @@ export default function About() {
 
               <div className="space-y-4 text-lg text-muted-foreground font-light leading-relaxed">
                 <p>
-                  I am <span className="text-foreground font-medium">Nehemie Calvin</span>, 
+                  I am <span className="text-foreground font-medium">Nehemie Ntihebuwayo</span>, 
                   a photographer who views the world as a complex interaction of light, 
                   geometry, and human connection. 
                 </p>
