@@ -39,8 +39,7 @@ export default function Contact() {
 
   const socials = [
     { icon: Instagram, label: 'Instagram', href: 'https://www.instagram.com/n_calvin.maker' },
-    { icon: Facebook, label: 'Facebook', href: '#' },
-    { icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/in/nehemie-ntihebuwayo-698b0a37b/' },
+    { icon: Linkedin, label: 'LinkedIn', href: 'https://www.instagram.com/nehemy.log/' },
   ]
 
   return (
